@@ -46,10 +46,12 @@ $live = Get-ChildItem -Path $profilesDir -Filter 'VEN_10DE*DEV_2482*.cfg' -File 
 if (-not $live) { throw 'Brak pliku VEN_*DEV_2482*.cfg - to nie jest PC z RTX 3070 Ti. Nic nie podmieniam.' }
 Write-Host "Live plik karty: $($live.Name)"
 
-$src = Join-Path $PSScriptRoot ($map[$Test] + '\VEN_10DE&DEV_2482&SUBSYS_146A10DE&REV_A1&BUS_1&DEV_0&FN_0.cfg')
+$testsRoot = Join-Path $PSScriptRoot '..\tests'
+$srcDir = Join-Path $testsRoot $map[$Test]
+$src = Join-Path $srcDir 'VEN_10DE&DEV_2482&SUBSYS_146A10DE&REV_A1&BUS_1&DEV_0&FN_0.cfg'
 # awaryjnie: wez jedyny .cfg z folderu testu (gdyby nazwa BUS sie roznila)
 if (-not (Test-Path $src)) {
-  $src = Get-ChildItem -Path (Join-Path $PSScriptRoot $map[$Test]) -Filter '*.cfg' -File |
+  $src = Get-ChildItem -Path $srcDir -Filter '*.cfg' -File |
     Select-Object -First 1 -ExpandProperty FullName
 }
 if (-not $src -or -not (Test-Path $src)) { throw "Nie znaleziono pliku testu w folderze $($map[$Test])." }

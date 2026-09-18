@@ -1,19 +1,21 @@
 # RTX 3070 Ti (DEV_2482) — profile MSI Afterburner na zasilacz Dell 12V @ 18A
 
-## Pliki źródłowe (to repo, ten folder)
+## Układ repo
 
-- `TEST1_1830MHz_825mV_MEM+0_PL70/VEN_10DE&DEV_2482&SUBSYS_146A10DE&REV_A1&BUS_1&DEV_0&FN_0.cfg`
+- `tests/TEST1_...`, `tests/TEST2_...`, `tests/TEST3_...` — gotowe profile do wgrania (w każdym jeden `VEN_...DEV_2482...cfg`).
+- `tools/Install-GpuProfile.ps1` — skrypt instalujący wybrany test (patrz niżej).
+- `original/` — oryginalny zrzut profilu 3070 Ti z PC (`Core -225 MHz`, `PL 100%`, krzywe sprzed spłaszczenia). Tylko do wglądu / rollbacku, nie do testów na cegle.
+- `docs/screenshots/` — screenshoty dokumentujące krzywe (flat 1830@825, 1680@750) i okno główne.
+- `reference/` — `MSIAfterburner.cfg` i `Profile1-5.cfg`: tylko monitoring/OSD i ustawienia globalne, **nie zawierają OC**. Nie podmieniać ich dla samego UV.
+
+## Pliki testowe (co jest w środku)
+
+- `tests/TEST1_1830MHz_825mV_MEM+0_PL70/...`
   — flat 1830 MHz @ 825 mV (+193 w punkcie 825), Mem +0, Power Limit 70%, Fan 65%. Baza.
-- `TEST2_1845MHz_825mV_MEM+0_PL70/...` — flat 1845 @ 825, Mem +0, PL 70%, Fan 65%. +15 MHz względem bazy.
-- `TEST3_1860MHz_825mV_MEM+500_PL70/...` — flat 1860 @ 825, Mem +500, PL 70%, Fan 70%. Max.
+- `tests/TEST2_1845MHz_825mV_MEM+0_PL70/...` — flat 1845 @ 825, Mem +0, PL 70%, Fan 65%. +15 MHz względem bazy.
+- `tests/TEST3_1860MHz_825mV_MEM+500_PL70/...` — flat 1860 @ 825, Mem +500, PL 70%, Fan 70%. Max.
 - W każdym pliku testowym sekcje `[Startup]`, `[Profile1]`, `[Profile2]` = test.
   `[Profile3]` = nietknięty stary flat ~1680 (rescue), `[Profile4/5]` = stare krzywe.
-- `VEN_10DE&DEV_2482&SUBSYS_146A10DE&REV_A1&BUS_1&DEV_0&FN_0.cfg` (root folderu)
-  — oryginał zrzutu z PC: Startup/Profile3/4/5, `Core -225 MHz`, `PL 100%`, krzywe sprzed spłaszczenia.
-- `VEN_10DE&DEV_2504...cfg` — **NIE UŻYWAĆ, to RTX 3060** (pozostałość). Nie kopiować na PC z 3070 Ti.
-- `VEN_0000...cfg` — generyczny fallback, nie kopiować.
-- `Profile1-5.cfg`, `MSIAfterburner.cfg` — tylko monitoring/OSD i ustawienia globalne, **nie zawierają OC**. Nie podmieniać ich dla samego UV.
-- `Screenshot ...png` — dokumentacja: flat 1830@825 (+193) i 1680@750 (+230), okno główne 1770 MHz / 818 mV i 1680 MHz / 787 mV.
 
 ## Plik docelowy (obcy PC z tą samą kartą)
 
@@ -29,12 +31,12 @@ Karta musi być `VEN_10DE & DEV_2482` (RTX 3070 Ti). Przy innym DEV/SUBSYS nie k
 
 ## Jak podmienić (kolejność obowiązkowa TEST1 → TEST2 → TEST3)
 
-Preferowana metoda (agent / drugi PC): skrypt `Install-GpuProfile.ps1` z root tego repo.
+Preferowana metoda (agent / drugi PC): skrypt `tools/Install-GpuProfile.ps1` z root tego repo.
 Sam znajduje live plik po `DEV_2482` (odporny na inny `BUS_x`), robi backup
 `<nazwa>.bak-RRRRMMDD-GGMMSS.cfg` w `Profiles\` i wgrywa wybrany test:
 
 ```powershell
-.\Install-GpuProfile.ps1 -Test 1   # potem 2, potem 3
+.\tools\Install-GpuProfile.ps1 -Test 1   # potem 2, potem 3
 ```
 
 Skrypt wymaga zamkniętego Afterburnera i odmawia pracy gdy nie widzi karty DEV_2482.
@@ -61,5 +63,5 @@ Metoda ręczna (fallback):
 - NIE dokładaj MEM OC przed pass core (najpierw TEST1/2 na Mem +0, potem TEST3).
 - NIE testuj na wentylatorze 30–36% pod obciążeniem — dobije do Temp Limit i wynik mocy będzie niemiarodajny.
 - NIE przeskakuj kolejności i NIE uznawaj 5 min testu za stabilne.
-- NIE kopiuj pliku `VEN_2504` (RTX 3060) ani nie twórz drugiej nazwy pliku w `Profiles\` — Afterburner czyta tylko plik zgodny z aktualnym BUS; zła nazwa = ustawienia się nie zaaplikują mimo że plik leży w folderze.
+- NIE kopiuj profilu z innej karty (w historii repo leży `VEN_2504` od RTX 3060 — celowo usunięty z drzewa) ani nie twórz drugiej nazwy pliku w `Profiles\` — Afterburner czyta tylko plik zgodny z aktualnym BUS; zła nazwa = ustawienia się nie zaaplikują mimo że plik leży w folderze.
 - NIE edytuj hex `VFCurve` ręcznie — flat = `offset = LOCK - baza` dla każdego punktu ≥ 825 mV; pliki TESTx mają to już policzone i zweryfikowane (0 rozjazdów).
